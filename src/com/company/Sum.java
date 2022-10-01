@@ -1,208 +1,196 @@
 package com.company;
 
+import java.util.Locale;
+
 public class Sum {
 
-    private double sum;
+    private String sum;
 
-    public Sum(double sum) {
+    private String[][] ones = {
+            {"", ""},
+            {"один ", "одна "},
+            {"два ", "дві "},
+            {"три ", "три "},
+            {"чотири ", "чотири "},
+            {"пять ", "пять "},
+            {"шість ", "шість "},
+            {"сім ", "сім "},
+            {"вісім ", "вісім "},
+            {"дев'ять ", "дев'ять "},
+    };
+    private String dozens[] = {
+            "десять ",
+            "одинадцять ",
+            "дванадцять ",
+            "тринадцять ",
+            "чотирнадцять ",
+            "п'ятнадцять ",
+            "шістнадцять ",
+            "сімнадцять ",
+            "вісімнадцять ",
+            "дев'ятнадцять "
+    };
+    private String tens[] = {
+            "",
+            "",
+            "двадцять ",
+            "тридцять ",
+            "сорок ",
+            "п'ятдесят ",
+            "шістдесят ",
+            "сімдесят ",
+            "вісімдесят ",
+            "дев'яносто "
+    };
+
+    private String hundreds[] = {
+            "",
+            "сто ",
+            "двісті ",
+            "триста ",
+            "чотириста ",
+            "п'ятсот ",
+            "шістсот ",
+            "сімсот ",
+            "вісімсот ",
+            "дев'ятсот "
+    };
+
+    private String additions[][] = {
+            {"гривня", "гривні", "гривень"},
+            {"тисяча ", "тисячі ", "тисяч "},
+            {"мільйон ", "мільйони ", "мільйонів "},
+    };
+
+    public Sum(String sum) {
         this.sum = sum;
     }
 
+    public char[] sumToCharArray(){
+        return sum.substring(0, sum.indexOf('.')).toCharArray();
+    }
+
     public String toText() {
-        String sumToText = Double.toString(this.sum).substring(0, Double.toString(this.sum).indexOf('.'));
-        char[] sumArray = sumToText.toCharArray();
-        StringBuilder builder = new StringBuilder();
+        char[] sum = sumToCharArray();
         int counter = 1;
-        for (int i = sumArray.length - 1; i > 0; i--) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("");
+        for (int i = sum.length - 1; i >= 0; i--){
 
-            switch (counter){
-                case 4:{
-                    if (sumArray[i] == '0'|| (sumArray[i] >= '5' && sumArray[i] <='9') ||
-                            sumArray[i - 1] == '1'){
-                        builder.insert(0, " тисяч");
-                    } else if (sumArray[i] == '1' && (sumArray[i - 1] !='1')){
-                        builder.insert(0, " тисяча");
-                    } else if (sumArray[i] >= '2' && sumArray[i] <= '4'){
-                        builder.insert(0, " тисячі");
-                    }
-                } break;
-                case 7:{
-                    if (sumArray[i] == '0' || (sumArray[i] >= '5' && sumArray[i] <='9') ||
-                            sumArray[i - 1] == '1'){
-                        builder.insert(0, " мільйонів");
-                    } else if (sumArray[i] == 1){
-                        builder.insert(0, " мільйон");
-                    } else if (sumArray[i] >= 2 && sumArray[i] <= 4){
-                        builder.insert(0, " мільйони");
-                    }
-                } break;
+            builder.insert(0, addAddition(counter,Integer.parseInt(Character.toString(sum[i]))));
 
-            }
-
-            if (counter == 1 && sumArray[i - 1] != '1') {
+            if (counter == 1 || counter == 4){
                 counter++;
-                builder.append(addOnes(sumArray[i]));
-                continue;
-            } else if (counter == 1 && sumArray[i - 1] == '1'){
-                counter++;
-                builder.append(defineDozens(sumArray[i]));
+                builder.insert(0, ones[Integer.parseInt(Character.toString(sum[i]))][1]);
                 continue;
             }
 
-            if (counter == 2 || counter == 5){
+            if (counter == 2 && sum[i] == '1'){
                 counter++;
-                builder.insert(0, defineTens(sumArray[i]));
+                builder.delete(0, builder.capacity());
+                builder.append(additions[0][2]);
+                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
+                continue;
+            } else if (counter == 2 && sum[i] != '1') {
+                counter++;
+                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
                 continue;
             }
 
             if (counter == 3 || counter == 6 || counter == 9){
                 counter++;
-                builder.insert(0, defineHundreds(sumArray[i]));
+                builder.insert(0, hundreds[Integer.parseInt(Character.toString(sum[i]))]);
                 continue;
             }
 
-            if (counter == 4){
+            if (counter == 5 && sum[i] == '1'){
                 counter++;
-                builder.insert(0, defineThousands(sumArray[i]));
+                builder.delete(0, builder.toString().indexOf(' ') + 1);
+                builder.delete(0, builder.toString().indexOf(' ') + 1);
+                builder.insert(0, additions[1][2]);
+                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
+                continue;
+            } else if (counter == 5 && sum[i] != '1'){
+                counter++;
+                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
                 continue;
             }
 
-            if (counter == 5 && sumArray[i - 1] != '1') {
+            if (counter == 7){
                 counter++;
-                switch (sumArray[i]) {
-                    case '0' -> builder.insert(0, " десять");
-                    case '1' -> builder.insert(0, " одна");
-                    case '2' -> builder.insert(0, " дві");
-                    case '3' -> builder.insert(0, " три");
-                    case '4' -> builder.insert(0, " чотири");
-                    case '5' -> builder.insert(0, " п'ять");
-                    case '6' -> builder.insert(0, " шість");
-                    case '7' -> builder.insert(0, " сім");
-                    case '8' -> builder.insert(0, " вісім");
-                    case '9' -> builder.insert(0, " девя'ть");
-                }
+                builder.insert(0, ones[Integer.parseInt(Character.toString(sum[i]))][0]);
                 continue;
-            } else if (counter == 5 && sumArray[i - 1] == '1'){
+            }
+
+            if (counter == 8 && sum[i] == '1'){
                 counter++;
-                switch (sumArray[i]) {
-                    case '0' -> builder.insert(0, " десять тисяч");
-                    case '1' -> builder.insert(0, " одинадцять тисяч");
-                    case '2' -> builder.insert(0, " дванадцять тисяч");
-                    case '3' -> builder.insert(0, " тринадцять тисяч");
-                    case '4' -> builder.insert(0, " чотирнадцять тисяч");
-                    case '5' -> builder.insert(0, " п'ятнадцять тисяч");
-                    case '6' -> builder.insert(0, " шістнадцять тисяч");
-                    case '7' -> builder.insert(0, " сімнадцять тисяч");
-                    case '8' -> builder.insert(0, " вісімнадцять тисяч");
-                    case '9' -> builder.insert(0, " девя'тнадцять тисяч");
-                }
+                builder.delete(0, builder.toString().indexOf(' ') + 1);
+                builder.delete(0, builder.toString().indexOf(' ') + 1);
+                builder.insert(0, additions[2][2]);
+                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
+                continue;
+            } else if (counter == 8 && sum[i] != '1'){
+                counter++;
+                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
                 continue;
             }
 
         }
-        return builder.toString();
+
+        builder.append(" ");
+        builder.append(addCoins());
+        builder.append(" коп.");
+
+        return firstLetterToUpperCase(builder.toString());
     }
 
-    private String addOnes(int numberPosition){
-
+    private String addAddition(int counter, int number ){
         String result = "";
-
-        switch (numberPosition) {
-            case '0' ->{  result = " гривень";}
-            case '1' ->{  result = " одна гривня";}
-            case '2' ->{  result = " дві гривні";}
-            case '3' ->{  result = " три гривні";}
-            case '4' ->{  result = " чотири гривні";}
-            case '5' ->{  result = " п'ять гривень";}
-            case '6' ->{  result = " шість гривень";}
-            case '7' ->{  result = " сім гривень";}
-            case '8' ->{  result = " вісім гривень";}
-            case '9' ->{  result = " девя'ть гривень";}
+        if (counter == 1){
+            if (number == 1){
+                result = additions[0][0];
+            } else if (number >= 2 && number <= 4){
+                result = additions[0][1];
+            } else {
+                result = additions[0][2];
+            }
+        }
+        if (counter == 4){
+            if (number == 1){
+                result = additions[1][0];
+            } else if (number >= 2 && number <= 4){
+                result = additions[1][1];
+            } else {
+                result = additions[1][2];
+            }
         }
 
-        return result;
-
-    }
-
-    private String defineDozens(int numberPosition){
-
-        String result = "";
-
-        switch (numberPosition) {
-            case '0' ->{  result = " десять гривень";}
-            case '1' ->{  result = " одинадцять гривень";}
-            case '2' ->{  result = " дванадцять гривень";}
-            case '3' ->{  result = " тринадцять гривень";}
-            case '4' ->{  result = " чотирнадцять гривень";}
-            case '5' ->{  result = " п'ятнадцять гривень";}
-            case '6' ->{  result = " шістнадцять гривень";}
-            case '7' ->{  result = " сімнадцять гривень";}
-            case '8' ->{  result = " вісімнадцять гривень";}
-            case '9' ->{  result = " девя'тнадцять гривень";}
+        if (counter == 7){
+            if (number == 1){
+                result = additions[2][0];
+            } else if (number >= 2 && number <= 4){
+                result = additions[2][1];
+            } else {
+                result = additions[2][2];
+            }
         }
-
         return result;
-
     }
 
-    private String defineTens(int numberPosition){
-
-        String result = "";
-
-        switch (numberPosition) {
-            case '2' ->{  result = " двадцять";}
-            case '3' ->{  result = " тридцять";}
-            case '4' ->{  result = " сорок";}
-            case '5' ->{  result = " п'ятдесят";}
-            case '6' ->{  result = " шістдесят";}
-            case '7' ->{  result = " сімдесят";}
-            case '8' ->{  result = " вісімдесят";}
-            case '9' ->{  result = " девя'носто";}
-        }
-
+    private String firstLetterToUpperCase(String string){
+        char[] chars = string.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        String result = new String(chars);
         return result;
-
     }
 
-    private String defineHundreds(int numberPosition){
-
-        String result = "";
-
-        switch (numberPosition) {
-            case '1' ->{  result = " сто";}
-            case '2' ->{  result = " двісті";}
-            case '3' ->{  result = " триста";}
-            case '4' ->{  result = " чотириста";}
-            case '5' ->{  result = " п'ятсот";}
-            case '6' ->{  result = " шістсот";}
-            case '7' ->{  result = " сімсот";}
-            case '8' ->{  result = " вісімсот";}
-            case '9' ->{  result = " девя'тсот";}
-        }
-
-        return result;
-
+    private String addCoins(){
+       return sum.substring(sum.indexOf('.') + 1, sum.indexOf('.') + 3);
     }
 
-    private String defineThousands(int numberPosition){
 
-        String result = "";
 
-        switch (numberPosition) {
-            case '1' ->{  result = " одна";}
-            case '2' ->{  result = " дві";}
-            case '3' ->{  result = " три";}
-            case '4' ->{  result = " чотири";}
-            case '5' ->{  result = " п'ять";}
-            case '6' ->{  result = " шість";}
-            case '7' ->{  result = " сім";}
-            case '8' ->{  result = " вісім";}
-            case '9' ->{  result = " девя'ть";}
-        }
 
-        return result;
-
-    }
 
 }
 

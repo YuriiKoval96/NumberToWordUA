@@ -4,7 +4,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Sum sum = new Sum(1123312.45);
+            Sum sum = new Sum("999999999.45");
         System.out.println(sum.toText());
 
     }
