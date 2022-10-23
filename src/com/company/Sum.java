@@ -1,12 +1,19 @@
 package com.company;
 
-import java.util.Locale;
+import com.sun.jdi.Value;
+
+import java.math.BigDecimal;
 
 public class Sum {
 
     private String sum;
+    static private int number_part_counter = 0;
+    private double tax;
+    private String taxName;
+    private double price;
+    private double amount;
 
-    private String[][] ones = {
+    private final String[][] ones = {
             {"", ""},
             {"один ", "одна "},
             {"два ", "дві "},
@@ -18,7 +25,7 @@ public class Sum {
             {"вісім ", "вісім "},
             {"дев'ять ", "дев'ять "},
     };
-    private String dozens[] = {
+    private final String[] dozens = {
             "десять ",
             "одинадцять ",
             "дванадцять ",
@@ -30,7 +37,7 @@ public class Sum {
             "вісімнадцять ",
             "дев'ятнадцять "
     };
-    private String tens[] = {
+    private final String[] tens = {
             "",
             "",
             "двадцять ",
@@ -43,7 +50,7 @@ public class Sum {
             "дев'яносто "
     };
 
-    private String hundreds[] = {
+    private final String[] hundreds = {
             "",
             "сто ",
             "двісті ",
@@ -56,97 +63,120 @@ public class Sum {
             "дев'ятсот "
     };
 
-    private String additions[][] = {
+    private final String[][] additions = {
             {"гривня", "гривні", "гривень"},
             {"тисяча ", "тисячі ", "тисяч "},
             {"мільйон ", "мільйони ", "мільйонів "},
     };
 
-    public Sum(String sum) {
-        this.sum = sum;
+    public Sum(BigDecimal sum) {
+        this.sum = String.format("%.2f", sum);
     }
 
-    public char[] sumToCharArray(){
-        return sum.substring(0, sum.indexOf('.')).toCharArray();
+    public Sum(){
+
     }
 
-    public String toText() {
-        char[] sum = sumToCharArray();
-        int counter = 1;
-        StringBuilder builder = new StringBuilder();
-        builder.append("");
-        for (int i = sum.length - 1; i >= 0; i--){
+    public String getSum() {
+        return sum;
+    }
 
-            builder.insert(0, addAddition(counter,Integer.parseInt(Character.toString(sum[i]))));
-
-            if (counter == 1 || counter == 4){
-                counter++;
-                builder.insert(0, ones[Integer.parseInt(Character.toString(sum[i]))][1]);
-                continue;
-            }
-
-            if (counter == 2 && sum[i] == '1'){
-                counter++;
-                builder.delete(0, builder.capacity());
-                builder.append(additions[0][2]);
-                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
-                continue;
-            } else if (counter == 2 && sum[i] != '1') {
-                counter++;
-                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
-                continue;
-            }
-
-            if (counter == 3 || counter == 6 || counter == 9){
-                counter++;
-                builder.insert(0, hundreds[Integer.parseInt(Character.toString(sum[i]))]);
-                continue;
-            }
-
-            if (counter == 5 && sum[i] == '1'){
-                counter++;
-                builder.delete(0, builder.toString().indexOf(' ') + 1);
-                builder.delete(0, builder.toString().indexOf(' ') + 1);
-                builder.insert(0, additions[1][2]);
-                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
-                continue;
-            } else if (counter == 5 && sum[i] != '1'){
-                counter++;
-                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
-                continue;
-            }
-
-            if (counter == 7){
-                counter++;
-                builder.insert(0, ones[Integer.parseInt(Character.toString(sum[i]))][0]);
-                continue;
-            }
-
-            if (counter == 8 && sum[i] == '1'){
-                counter++;
-                builder.delete(0, builder.toString().indexOf(' ') + 1);
-                builder.delete(0, builder.toString().indexOf(' ') + 1);
-                builder.insert(0, additions[2][2]);
-                builder.insert(0, dozens[Integer.parseInt(Character.toString(sum[i + 1]))]);
-                continue;
-            } else if (counter == 8 && sum[i] != '1'){
-                counter++;
-                builder.insert(0, tens[Integer.parseInt(Character.toString(sum[i]))]);
-                continue;
-            }
-
+    public void setSum(String sum) throws NegativeValueException {
+        BigDecimal x = new BigDecimal(sum);
+        if (x.signum() < 0) {
+            throw new NegativeValueException();
         }
+        this.sum = String.format("%.2f", x);
+    }
 
-        builder.append(" ");
-        builder.append(addCoins());
-        builder.append(" коп.");
+    public void setSum() {
+        BigDecimal x = new BigDecimal(amount * price * tax);
+        this.sum = String.format("%.2f", x);
+    }
 
+    public double getTax() {
+        return tax;
+    }
+
+
+    public void setTax(double tax) {
+        this.tax = tax;
+    }
+
+    public String getTaxName() {
+        return taxName;
+    }
+
+    public void setTaxName(String taxName) {
+        this.taxName = taxName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public String partToText(String number){
+        StringBuilder builder = new StringBuilder();
+        builder.insert(0, addAddition(number_part_counter,
+                Character.getNumericValue(number.charAt(number.length() - 1))));
+        int counter = -1;
+        for (int i = number.length() - 1; i >= 0; i--){
+            counter++;
+            if (counter == 0 && number_part_counter !=2){
+                builder.insert(0, ones[Character.getNumericValue(number.charAt(i))][1]);
+                continue;
+            }else if (counter == 0 && number_part_counter == 2) {
+                builder.insert(0, ones[Character.getNumericValue(number.charAt(i))][0]);
+                continue;
+            }
+            if (counter == 1 && number.charAt(i) == '1'){
+                builder.delete(0, builder.capacity());
+                builder.insert(0, additions[number_part_counter][2]);
+                builder.insert(0, dozens[Character.getNumericValue(number.charAt(i + 1))]);
+                continue;
+            } else if (counter == 1 && number.charAt(i) != '1') {
+                builder.insert(0, tens[Character.getNumericValue(number.charAt(i))]);
+                continue;
+            }
+            if (counter == 2){
+                builder.insert(0, hundreds[Character.getNumericValue(number.charAt(i))]);
+                continue;
+            }
+        }
+        number_part_counter++;
+        return builder.toString();
+    }
+
+    public String toText(){
+        StringBuilder builder = new StringBuilder();
+        String sumUAH = sum.substring(0, sum.indexOf(','));
+        while (sumUAH.length() > 3) {
+            builder.insert(0, partToText(sumUAH.substring(sumUAH.length() - 3, sumUAH.length())));
+            sumUAH = sumUAH.substring(0, sumUAH.length() - 3);
+        }
+        builder.insert(0, partToText(sumUAH))
+                .append(" " + addCoins() + " коп.")
+                .append(" у тому числі ПДВ (" + taxName + ") " + addTax() + " грн.");
+        number_part_counter = 0;
         return firstLetterToUpperCase(builder.toString());
     }
 
+
     private String addAddition(int counter, int number ){
         String result = "";
-        if (counter == 1){
+        if (counter == 0){
             if (number == 1){
                 result = additions[0][0];
             } else if (number >= 2 && number <= 4){
@@ -155,7 +185,7 @@ public class Sum {
                 result = additions[0][2];
             }
         }
-        if (counter == 4){
+        if (counter == 1){
             if (number == 1){
                 result = additions[1][0];
             } else if (number >= 2 && number <= 4){
@@ -165,7 +195,7 @@ public class Sum {
             }
         }
 
-        if (counter == 7){
+        if (counter == 2){
             if (number == 1){
                 result = additions[2][0];
             } else if (number >= 2 && number <= 4){
@@ -180,18 +210,18 @@ public class Sum {
     private String firstLetterToUpperCase(String string){
         char[] chars = string.toCharArray();
         chars[0] = Character.toUpperCase(chars[0]);
-        String result = new String(chars);
-        return result;
+        return new String(chars);
     }
 
     private String addCoins(){
-       return sum.substring(sum.indexOf('.') + 1, sum.indexOf('.') + 3);
+       return sum.substring(sum.indexOf(',') + 1, sum.indexOf(',') + 3);
     }
 
-
-
-
-
+    private String addTax(){
+        BigDecimal result = new BigDecimal(Double.parseDouble(sum.replace(',','.'))
+                -(Double.parseDouble(sum.replace(',','.')) / (1 + tax)));
+        return String.format("%.2f", result);
+    }
 }
 
 

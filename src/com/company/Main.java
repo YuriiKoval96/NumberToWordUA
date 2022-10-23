@@ -1,12 +1,19 @@
 package com.company;
 
+
+import java.math.BigDecimal;
+
 public class Main {
 
     public static void main(String[] args) {
 
-            Sum sum = new Sum("999999999.45");
-        System.out.println(sum.toText());
+        com.company.App.runApp();
+        //Sum sum = new Sum(new BigDecimal("10"));
+        //System.out.println(sum.toText());
+        //System.out.println(sum.toText());
+
 
     }
+
 
 }
