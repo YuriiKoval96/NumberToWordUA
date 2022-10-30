@@ -1,6 +1,6 @@
 package com.company;
 
-import com.sun.jdi.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 
@@ -69,69 +69,78 @@ public class Sum {
             {"мільйон ", "мільйони ", "мільйонів "},
     };
 
-    public Sum(BigDecimal sum) {
-        this.sum = String.format("%.2f", sum);
-    }
-
     public Sum(){
 
     }
 
-    public String getSum() {
-        return sum;
-    }
-
-    public void setSum(String sum) throws NegativeValueException {
+    public void setSum(String sum) throws NegativeValueException, ValueIsTooBigException {
         BigDecimal x = new BigDecimal(sum);
         if (x.signum() < 0) {
             throw new NegativeValueException();
         }
+        if (x.compareTo(new BigDecimal(999999999.99)) == 1){
+            throw new ValueIsTooBigException();
+        }
         this.sum = String.format("%.2f", x);
     }
 
-    public void setSum() {
-        BigDecimal x = new BigDecimal(amount * price * tax);
+    public void countSum() throws ValueIsTooBigException {
+        BigDecimal x = new BigDecimal(Double.toString(this.amount * this.price));
+        if (x.compareTo(new BigDecimal(999999999.99)) == 1){
+            throw new ValueIsTooBigException();
+        }
         this.sum = String.format("%.2f", x);
     }
-
-    public double getTax() {
-        return tax;
-    }
-
 
     public void setTax(double tax) {
         this.tax = tax;
-    }
-
-    public String getTaxName() {
-        return taxName;
     }
 
     public void setTaxName(String taxName) {
         this.taxName = taxName;
     }
 
+    public void setPrice(double price) throws NegativeValueException, ValueIsTooBigException {
+        this.price = price;
+        if (!Double.toString(this.amount).isEmpty() && !Double.toString(this.price).isEmpty()){
+            if (this.amount * this.price > 999999999.99){
+                throw new ValueIsTooBigException();
+            }
+        }
+        if (price < 0){
+            throw new NegativeValueException();
+        }
+    }
+
     public double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setAmount(double amount) throws NegativeValueException, ValueIsTooBigException {
+        this.amount = amount;
+        if (!Double.toString(this.amount).isEmpty() && !Double.toString(this.price).isEmpty()){
+            if (this.amount * this.price > 999999999.99){
+                throw new ValueIsTooBigException();
+            }
+        }
+        if (amount < 0){
+            throw new NegativeValueException();
+        }
     }
 
     public double getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
     public String partToText(String number){
         StringBuilder builder = new StringBuilder();
-        builder.insert(0, addAddition(number_part_counter,
-                Character.getNumericValue(number.charAt(number.length() - 1))));
         int counter = -1;
+        if (number.equals("000") && number_part_counter == 1){
+
+        } else {
+            builder.insert(0, addAddition(number_part_counter,
+                    Character.getNumericValue(number.charAt(number.length() - 1))));
+        }
         for (int i = number.length() - 1; i >= 0; i--){
             counter++;
             if (counter == 0 && number_part_counter !=2){
@@ -213,7 +222,8 @@ public class Sum {
         return new String(chars);
     }
 
-    private String addCoins(){
+    private @NotNull
+    String addCoins(){
        return sum.substring(sum.indexOf(',') + 1, sum.indexOf(',') + 3);
     }
 
@@ -223,6 +233,3 @@ public class Sum {
         return String.format("%.2f", result);
     }
 }
-
-
-
