@@ -1,19 +1,20 @@
 package com.company;
 
-import net.miginfocom.swing.MigLayout;
+        import net.miginfocom.swing.MigLayout;
 
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
+        import javax.swing.*;
+        import javax.swing.border.Border;
+        import javax.swing.event.DocumentEvent;
+        import javax.swing.event.DocumentListener;
+        import java.awt.*;
+        import java.awt.datatransfer.Clipboard;
+        import java.awt.datatransfer.StringSelection;
+        import java.awt.event.*;
 
 public class AppWindow extends JFrame {
 
     static JFrame window = new JFrame("Перетворити число в суму прописом");
+    JButton convertButton = createConvertButton();
     JTextField sumTextField = createSumTextField();
     JTextField priceTextField = createPriceTextField();
     JTextField amountTextField = createAmountTextField();
@@ -61,12 +62,12 @@ public class AppWindow extends JFrame {
     private JPanel createButtonPanel(){
         JPanel buttonPanel = new JPanel(new MigLayout("", "0[]0", "5[]10[]5"));
         buttonPanel.setPreferredSize(new Dimension(100, 90));
-        buttonPanel.add(createFirstConvertButton(), "wrap");
+        buttonPanel.add(convertButton, "wrap");
         buttonPanel.add(createCopyButton());
         return buttonPanel;
     }
 
-    private JButton createFirstConvertButton(){
+    private JButton createConvertButton(){
         JButton firstConvertButton = new JButton("Перетворити");
         ImageIcon convertIcon = new ImageIcon("C:\\Users\\Юрій\\IdeaProjects\\NumberToWordUA\\src\\convert.png");
         firstConvertButton.setIcon(convertIcon);
@@ -79,7 +80,7 @@ public class AppWindow extends JFrame {
                 if (!amountTextField.getText().isEmpty() && !priceTextField.getText().isEmpty()){
                     try {
                         sum.countSum();
-                    } catch (ValueIsTooBigException exception){
+                    } catch (TooBigSumException exception){
                         resultTextArea.setText("Сума не може бути більшою ніж 999999999,99");
                     } catch (Exception exception){
 
@@ -121,51 +122,32 @@ public class AppWindow extends JFrame {
         sumTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    sum.setSum(sumTextField.getText().replace(',', '.')
-                            .replace(" ", ""));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    if (sumTextField.getText().isEmpty()){} else {
-                        resultTextArea.setText("Сума не може бути відємною ");
-                    }
-                    resultTextArea.setText("Сума не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена сума");
-                } catch (ValueIsTooBigException exception) {
-                    resultTextArea.setText("Сума повинна бути менщою ніж 999999999,99 ");
-                }
+                updateSumTextField();
             }
             @Override
             public void removeUpdate(DocumentEvent e) {
-                try {
-                    sum.setSum(sumTextField.getText().replace(',', '.')
-                            .replace(" ", ""));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Сума не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена сума");
-                } catch (ValueIsTooBigException exception) {
-                    resultTextArea.setText("Сума повинна бути менщою ніж 999999999,99 ");
-                }
+                updateSumTextField();
             }
             @Override
             public void changedUpdate(DocumentEvent e) {
-                try {
-                    sum.setSum(sumTextField.getText().replace(',', '.')
-                            .replace(" ", ""));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Сума не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена сума");
-                } catch (ValueIsTooBigException exception) {
-                    resultTextArea.setText("Сума повинна бути менщою ніж 999999999,99 ");
-                }
+               updateSumTextField();
             }
         });
         return sumTextField;
+    }
+
+    private void updateSumTextField(){
+        try {
+            sum.setSum(sumTextField.getText().replace(',', '.')
+                    .replace(" ", ""));
+            resultTextArea.setText("");
+        } catch (NegativeValueException exception){
+            resultTextArea.setText("Сума не може бути відємною");
+        } catch (NumberFormatException exception){
+            resultTextArea.setText("Некоректно введена сума");
+        } catch (TooBigSumException exception) {
+            resultTextArea.setText("Сума повинна бути менщою ніж 999999999,99 ");
+        }
     }
 
     private JTextField createAmountTextField(){
@@ -175,54 +157,38 @@ public class AppWindow extends JFrame {
         amountTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    sum.setAmount(Double.parseDouble(amountTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Кількість не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена кількість");
-                }catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При ціні в " + sum.getPrice() + " кількість не можу бути більшою ніж "
-                            + String.format("%.2f", 999999999.99 / sum.getPrice()) );
-                }
+                updateAmountTextField();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                try {
-                    sum.setAmount(Double.parseDouble(amountTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Кількість не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена кількість");
-                } catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При ціні в " + sum.getPrice() + " кількість не можу бути більшою ніж "
-                            + String.format("%.2f", 999999999.99 / sum.getPrice()) );
-                }
+                updateAmountTextField();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                try {
-                    sum.setAmount(Double.parseDouble(amountTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Кількість не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена кількість");
-                } catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При ціні в " + sum.getPrice() + " кількість не можу бути більшою ніж "
-                            + String.format("%.2f", 999999999.99 / sum.getPrice()) );
-                }
+                updateAmountTextField();
             }
         });
 
         return amountTextField;
+    }
+
+    private void updateAmountTextField(){
+        try {
+            sum.setAmount(Double.parseDouble(amountTextField.getText().replace(',', '.')
+                    .replace(" ", "")));
+            resultTextArea.setText("");
+        } catch (NegativeValueException exception){
+            resultTextArea.setText("Кількість не може бути відємною");
+        } catch (NumberFormatException exception){
+            resultTextArea.setText("Некоректно введена кількість");
+        } catch (TooBigAmountException exception){
+            resultTextArea.setText("Кількість не може бути більшою за 999999999,99");
+        } catch (TooBigSumException exception){
+            resultTextArea.setText("При ціні в " + sum.getPrice() + " кількість не можу бути більшою ніж "
+                    + String.format("%.2f", 999999999.99 / sum.getPrice()) );
+        }
     }
 
     private JTextField createPriceTextField(){
@@ -232,54 +198,38 @@ public class AppWindow extends JFrame {
             priceTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    sum.setPrice(Double.parseDouble(priceTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Ціна не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена ціна");
-                } catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж"
-                            + String.format("%.2f", 999999999.99 / sum.getAmount()));
-                }
+                updatePriceTextField();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                try {
-                    sum.setPrice(Double.parseDouble(priceTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Ціна не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена ціна");
-                } catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж"
-                            + String.format("%.2f", 999999999.99 / sum.getAmount()));
-                }
+                updatePriceTextField();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                try {
-                    sum.setPrice(Double.parseDouble(priceTextField.getText().replace(',', '.')
-                            .replace(" ", "")));
-                    resultTextArea.setText("");
-                } catch (NegativeValueException exception){
-                    resultTextArea.setText("Ціна не може бути відємною");
-                } catch (NumberFormatException exception){
-                    resultTextArea.setText("Некоректно введена ціна");
-                } catch (ValueIsTooBigException exception){
-                    resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж"
-                            + String.format("%.2f", 999999999.99 / sum.getAmount()));
-                }
+                updatePriceTextField();
             }
             });
 
         return priceTextField;
+    }
+
+    private void updatePriceTextField(){
+        try {
+            sum.setPrice(Double.parseDouble(priceTextField.getText().replace(',', '.')
+                    .replace(" ", "")));
+            resultTextArea.setText("");
+        } catch (NegativeValueException exception){
+            resultTextArea.setText("Ціна не може бути відємною");
+        } catch (NumberFormatException exception){
+            resultTextArea.setText("Некоректно введена ціна");
+        } catch (TooBigPriceException exception){
+            resultTextArea.setText("Ціна не може бути більшою за 999999999,99");
+        } catch (TooBigSumException exception){
+            resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж"
+                    + String.format("%.2f", 999999999.99 / sum.getAmount()));
+        }
     }
 
     private JTextArea createResultTextArea(){
@@ -322,12 +272,7 @@ public class AppWindow extends JFrame {
     }
 
     private JComboBox createCountModeBox(){
-        sumTextField.enable();
-        sumTextField.setBackground(Color.WHITE);
-        amountTextField.disable();
-        amountTextField.setBackground(Color.LIGHT_GRAY);
-        priceTextField.disable();
-        priceTextField.setBackground(Color.LIGHT_GRAY);
+        countBySum();
         JComboBox countModeBox = new JComboBox(new String[] {"Cумою",
                 "Кількістю та ціною"});
         countModeBox.setPreferredSize(new Dimension(160, 25));
@@ -337,28 +282,36 @@ public class AppWindow extends JFrame {
                 switch (countModeBox.getSelectedIndex()){
 
                     case (0):
-                        sumTextField.enable();
-                        sumTextField.setBackground(Color.WHITE);
-                        amountTextField.disable();
-                        amountTextField.setBackground(Color.LIGHT_GRAY);
-                        amountTextField.setText("");
-                        priceTextField.disable();
-                        priceTextField.setBackground(Color.LIGHT_GRAY);
-                        priceTextField.setText("");
+                        countBySum();
                         break;
                     case (1):
-                        sumTextField.disable();
-                        sumTextField.setText("");
-                        sumTextField.setBackground(Color.LIGHT_GRAY);
-                        amountTextField.enable();
-                        amountTextField.setBackground(Color.WHITE);
-                        priceTextField.enable();
-                        priceTextField.setBackground(Color.WHITE);
+                        countByPriceAndAmount();
                         break;
                 }
             }
         });
         return countModeBox;
+    }
+
+    private void countBySum(){
+        sumTextField.enable();
+        sumTextField.setBackground(Color.WHITE);
+        amountTextField.disable();
+        amountTextField.setBackground(Color.LIGHT_GRAY);
+        amountTextField.setText("");
+        priceTextField.disable();
+        priceTextField.setBackground(Color.LIGHT_GRAY);
+        priceTextField.setText("");
+    }
+
+    private void countByPriceAndAmount(){
+        sumTextField.disable();
+        sumTextField.setText("");
+        sumTextField.setBackground(Color.LIGHT_GRAY);
+        amountTextField.enable();
+        amountTextField.setBackground(Color.WHITE);
+        priceTextField.enable();
+        priceTextField.setBackground(Color.WHITE);
     }
 
 }

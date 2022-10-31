@@ -13,7 +13,7 @@ public class Sum {
     private double price;
     private double amount;
 
-    private final String[][] ones = {
+    private static final String[][] ONES = {
             {"", ""},
             {"один ", "одна "},
             {"два ", "дві "},
@@ -25,7 +25,7 @@ public class Sum {
             {"вісім ", "вісім "},
             {"дев'ять ", "дев'ять "},
     };
-    private final String[] dozens = {
+    private static final String[] DOZENS = {
             "десять ",
             "одинадцять ",
             "дванадцять ",
@@ -37,7 +37,7 @@ public class Sum {
             "вісімнадцять ",
             "дев'ятнадцять "
     };
-    private final String[] tens = {
+    private static final String[] TENS = {
             "",
             "",
             "двадцять ",
@@ -50,7 +50,7 @@ public class Sum {
             "дев'яносто "
     };
 
-    private final String[] hundreds = {
+    private static final String[] HUNDREDS = {
             "",
             "сто ",
             "двісті ",
@@ -63,31 +63,27 @@ public class Sum {
             "дев'ятсот "
     };
 
-    private final String[][] additions = {
+    private static final String[][] ADDITIONS = {
             {"гривня", "гривні", "гривень"},
             {"тисяча ", "тисячі ", "тисяч "},
             {"мільйон ", "мільйони ", "мільйонів "},
     };
 
-    public Sum(){
-
-    }
-
-    public void setSum(String sum) throws NegativeValueException, ValueIsTooBigException {
+    public void setSum(String sum) throws NegativeValueException, TooBigSumException {
         BigDecimal x = new BigDecimal(sum);
         if (x.signum() < 0) {
             throw new NegativeValueException();
         }
         if (x.compareTo(new BigDecimal(999999999.99)) == 1){
-            throw new ValueIsTooBigException();
+            throw new TooBigSumException();
         }
         this.sum = String.format("%.2f", x);
     }
 
-    public void countSum() throws ValueIsTooBigException {
+    public void countSum() throws TooBigSumException {
         BigDecimal x = new BigDecimal(Double.toString(this.amount * this.price));
         if (x.compareTo(new BigDecimal(999999999.99)) == 1){
-            throw new ValueIsTooBigException();
+            throw new TooBigSumException();
         }
         this.sum = String.format("%.2f", x);
     }
@@ -100,15 +96,18 @@ public class Sum {
         this.taxName = taxName;
     }
 
-    public void setPrice(double price) throws NegativeValueException, ValueIsTooBigException {
+    public void setPrice(double price) throws NegativeValueException, TooBigSumException, TooBigPriceException {
         this.price = price;
         if (!Double.toString(this.amount).isEmpty() && !Double.toString(this.price).isEmpty()){
             if (this.amount * this.price > 999999999.99){
-                throw new ValueIsTooBigException();
+                throw new TooBigSumException();
             }
         }
         if (price < 0){
             throw new NegativeValueException();
+        }
+        if (price > 999999999.99){
+            throw new TooBigPriceException();
         }
     }
 
@@ -116,15 +115,18 @@ public class Sum {
         return price;
     }
 
-    public void setAmount(double amount) throws NegativeValueException, ValueIsTooBigException {
+    public void setAmount(double amount) throws NegativeValueException, TooBigSumException, TooBigAmountException {
         this.amount = amount;
         if (!Double.toString(this.amount).isEmpty() && !Double.toString(this.price).isEmpty()){
             if (this.amount * this.price > 999999999.99){
-                throw new ValueIsTooBigException();
+                throw new TooBigSumException();
             }
         }
         if (amount < 0){
             throw new NegativeValueException();
+        }
+        if (amount > 999999999.99){
+            throw new TooBigAmountException();
         }
     }
 
@@ -144,23 +146,23 @@ public class Sum {
         for (int i = number.length() - 1; i >= 0; i--){
             counter++;
             if (counter == 0 && number_part_counter !=2){
-                builder.insert(0, ones[Character.getNumericValue(number.charAt(i))][1]);
+                builder.insert(0, ONES[Character.getNumericValue(number.charAt(i))][1]);
                 continue;
             }else if (counter == 0 && number_part_counter == 2) {
-                builder.insert(0, ones[Character.getNumericValue(number.charAt(i))][0]);
+                builder.insert(0, ONES[Character.getNumericValue(number.charAt(i))][0]);
                 continue;
             }
             if (counter == 1 && number.charAt(i) == '1'){
                 builder.delete(0, builder.capacity());
-                builder.insert(0, additions[number_part_counter][2]);
-                builder.insert(0, dozens[Character.getNumericValue(number.charAt(i + 1))]);
+                builder.insert(0, ADDITIONS[number_part_counter][2]);
+                builder.insert(0, DOZENS[Character.getNumericValue(number.charAt(i + 1))]);
                 continue;
             } else if (counter == 1 && number.charAt(i) != '1') {
-                builder.insert(0, tens[Character.getNumericValue(number.charAt(i))]);
+                builder.insert(0, TENS[Character.getNumericValue(number.charAt(i))]);
                 continue;
             }
             if (counter == 2){
-                builder.insert(0, hundreds[Character.getNumericValue(number.charAt(i))]);
+                builder.insert(0, HUNDREDS[Character.getNumericValue(number.charAt(i))]);
                 continue;
             }
         }
@@ -185,34 +187,13 @@ public class Sum {
 
     private String addAddition(int counter, int number ){
         String result = "";
-        if (counter == 0){
             if (number == 1){
-                result = additions[0][0];
+                result = ADDITIONS[counter][0];
             } else if (number >= 2 && number <= 4){
-                result = additions[0][1];
+                result = ADDITIONS[counter][1];
             } else {
-                result = additions[0][2];
+                result = ADDITIONS[counter][2];
             }
-        }
-        if (counter == 1){
-            if (number == 1){
-                result = additions[1][0];
-            } else if (number >= 2 && number <= 4){
-                result = additions[1][1];
-            } else {
-                result = additions[1][2];
-            }
-        }
-
-        if (counter == 2){
-            if (number == 1){
-                result = additions[2][0];
-            } else if (number >= 2 && number <= 4){
-                result = additions[2][1];
-            } else {
-                result = additions[2][2];
-            }
-        }
         return result;
     }
 

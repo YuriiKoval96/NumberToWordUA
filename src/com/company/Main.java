@@ -6,7 +6,6 @@ public class Main {
 
         com.company.App.runApp();
 
-
     }
 
 
