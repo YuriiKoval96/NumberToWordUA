@@ -19,6 +19,8 @@ public class AppWindow extends JFrame {
     JTextField priceTextField = createPriceTextField();
     JTextField amountTextField = createAmountTextField();
     JTextArea resultTextArea = createResultTextArea();
+
+    JTextArea lolTextArea;
     Sum sum = new Sum();
 
     public AppWindow(){
@@ -33,6 +35,7 @@ public class AppWindow extends JFrame {
         window.add(createInputPanel(), BorderLayout.CENTER);
         window.add(createResultPanel(), BorderLayout.SOUTH);
         window.setVisible(true);
+        convertButton.setEnabled(false);
     }
 
     private JPanel createInputPanel(){
@@ -63,6 +66,7 @@ public class AppWindow extends JFrame {
         JPanel buttonPanel = new JPanel(new MigLayout("", "0[]0", "5[]10[]5"));
         buttonPanel.setPreferredSize(new Dimension(100, 90));
         buttonPanel.add(convertButton, "wrap");
+        convertButton.setEnabled(false);
         buttonPanel.add(createCopyButton());
         return buttonPanel;
     }
@@ -77,13 +81,11 @@ public class AppWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String result = "";
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                if (!amountTextField.getText().isEmpty() && !priceTextField.getText().isEmpty()){
+                if (amountTextField.isEnabled() && priceTextField.isEnabled()){
                     try {
                         sum.countSum();
                     } catch (TooBigSumException exception){
                         resultTextArea.setText("Сума не може бути більшою ніж 999999999,99");
-                    } catch (Exception exception){
-
                     }
                 }
                 try {
@@ -141,12 +143,16 @@ public class AppWindow extends JFrame {
             sum.setSum(sumTextField.getText().replace(',', '.')
                     .replace(" ", ""));
             resultTextArea.setText("");
+            convertButton.setEnabled(true);
         } catch (NegativeValueException exception){
             resultTextArea.setText("Сума не може бути відємною");
+            convertButton.setEnabled(false);
         } catch (NumberFormatException exception){
             resultTextArea.setText("Некоректно введена сума");
+            convertButton.setEnabled(false);
         } catch (TooBigSumException exception) {
             resultTextArea.setText("Сума повинна бути менщою ніж 999999999,99 ");
+            convertButton.setEnabled(false);
         }
     }
 
@@ -179,15 +185,24 @@ public class AppWindow extends JFrame {
             sum.setAmount(Double.parseDouble(amountTextField.getText().replace(',', '.')
                     .replace(" ", "")));
             resultTextArea.setText("");
+            convertButton.setEnabled(true);
+            if (amountTextField.isEnabled() && amountTextField.getText().isEmpty()
+                    || priceTextField.isEnabled() && priceTextField.getText().isEmpty()){
+                convertButton.setEnabled(false);
+            }
         } catch (NegativeValueException exception){
             resultTextArea.setText("Кількість не може бути відємною");
+            convertButton.setEnabled(false);
         } catch (NumberFormatException exception){
             resultTextArea.setText("Некоректно введена кількість");
+            convertButton.setEnabled(false);
         } catch (TooBigAmountException exception){
             resultTextArea.setText("Кількість не може бути більшою за 999999999,99");
+            convertButton.setEnabled(false);
         } catch (TooBigSumException exception){
             resultTextArea.setText("При ціні в " + sum.getPrice() + " кількість не можу бути більшою ніж "
                     + String.format("%.2f", 999999999.99 / sum.getPrice()) );
+            convertButton.setEnabled(false);
         }
     }
 
@@ -220,15 +235,20 @@ public class AppWindow extends JFrame {
             sum.setPrice(Double.parseDouble(priceTextField.getText().replace(',', '.')
                     .replace(" ", "")));
             resultTextArea.setText("");
+            convertButton.setEnabled(true);
         } catch (NegativeValueException exception){
             resultTextArea.setText("Ціна не може бути відємною");
+            convertButton.setEnabled(false);
         } catch (NumberFormatException exception){
             resultTextArea.setText("Некоректно введена ціна");
+            convertButton.setEnabled(false);
         } catch (TooBigPriceException exception){
             resultTextArea.setText("Ціна не може бути більшою за 999999999,99");
+            convertButton.setEnabled(false);
         } catch (TooBigSumException exception){
-            resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж"
+            resultTextArea.setText("При кількості в " + sum.getAmount() + " ціна не можу бути більшою ніж "
                     + String.format("%.2f", 999999999.99 / sum.getAmount()));
+            convertButton.setEnabled(false);
         }
     }
 
@@ -294,23 +314,23 @@ public class AppWindow extends JFrame {
     }
 
     private void countBySum(){
-        sumTextField.enable();
+        sumTextField.setEnabled(true);
         sumTextField.setBackground(Color.WHITE);
-        amountTextField.disable();
+        amountTextField.setEnabled(false);
         amountTextField.setBackground(Color.LIGHT_GRAY);
         amountTextField.setText("");
-        priceTextField.disable();
+        priceTextField.setEnabled(false);
         priceTextField.setBackground(Color.LIGHT_GRAY);
         priceTextField.setText("");
     }
 
     private void countByPriceAndAmount(){
-        sumTextField.disable();
+        sumTextField.setEnabled(false);
         sumTextField.setText("");
         sumTextField.setBackground(Color.LIGHT_GRAY);
-        amountTextField.enable();
+        amountTextField.setEnabled(true);
         amountTextField.setBackground(Color.WHITE);
-        priceTextField.enable();
+        priceTextField.setEnabled(true);
         priceTextField.setBackground(Color.WHITE);
     }
 
